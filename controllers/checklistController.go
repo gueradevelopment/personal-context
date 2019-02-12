@@ -13,14 +13,14 @@ import (
 )
 
 var (
-	taskDB db.TaskDB
+	checklistDB db.ChecklistDB
 )
 
-func taskGet(w http.ResponseWriter, r *http.Request) {
+func checklistGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	c := make(chan db.Result)
-	go taskDB.Get(id, c)
+	go checklistDB.Get(id, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -33,10 +33,10 @@ func taskGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func taskGetAll(w http.ResponseWriter, r *http.Request) {
+func checklistGetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	c := make(chan db.ResultArray)
-	go taskDB.GetAll(c)
+	go checklistDB.GetAll(c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -49,11 +49,11 @@ func taskGetAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func taskDelete(w http.ResponseWriter, r *http.Request) {
+func checklistDelete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	c := make(chan db.Result)
-	go taskDB.Delete(id, c)
+	go checklistDB.Delete(id, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -66,16 +66,16 @@ func taskDelete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func taskEdit(w http.ResponseWriter, r *http.Request) {
+func checklistEdit(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Error!")
 	}
-	var item models.Task
+	var item models.Checklist
 	json.Unmarshal(body, &item)
 
 	c := make(chan db.Result)
-	go taskDB.Edit(item, c)
+	go checklistDB.Edit(item, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -88,16 +88,16 @@ func taskEdit(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func taskAdd(w http.ResponseWriter, r *http.Request) {
+func checklistAdd(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Error!")
 	}
-	var item models.Task
+	var item models.Checklist
 	json.Unmarshal(body, &item)
 
 	c := make(chan db.Result)
-	go taskDB.Add(item, c)
+	go checklistDB.Add(item, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -110,12 +110,12 @@ func taskAdd(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// AddTaskController function
-func AddTaskController(r *mux.Router) {
-	taskDB = db.TaskDB{}
-	r.HandleFunc("/", taskGetAll).Methods(http.MethodGet)
-	r.HandleFunc("/{id}", taskGet).Methods(http.MethodGet)
-	r.HandleFunc("/", taskEdit).Methods(http.MethodPut)
-	r.HandleFunc("/", taskAdd).Methods(http.MethodPost)
-	r.HandleFunc("/{id}", taskDelete).Methods(http.MethodDelete)
+// AddChecklistController function
+func AddChecklistController(r *mux.Router) {
+	checklistDB = db.ChecklistDB{}
+	r.HandleFunc("/", checklistGetAll).Methods(http.MethodGet)
+	r.HandleFunc("/{id}", checklistGet).Methods(http.MethodGet)
+	r.HandleFunc("/", checklistEdit).Methods(http.MethodPut)
+	r.HandleFunc("/", checklistAdd).Methods(http.MethodPost)
+	r.HandleFunc("/{id}", checklistDelete).Methods(http.MethodDelete)
 }
