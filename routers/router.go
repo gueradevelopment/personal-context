@@ -16,5 +16,11 @@ func GetRouter() *mux.Router {
 	taskRouter := r.PathPrefix("/tasks").Subrouter()
 	controllers.AddTaskController(taskRouter)
 
+	checklistRouter := r.PathPrefix("/checklists").Subrouter()
+	controllers.AddChecklistController(checklistRouter)
+
+	boardRouter := r.PathPrefix("/boards").Subrouter()
+	controllers.AddBoardController(boardRouter)
+
 	return r
 }
