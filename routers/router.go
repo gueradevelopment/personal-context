@@ -22,5 +22,8 @@ func GetRouter() *mux.Router {
 	boardRouter := r.PathPrefix("/boards").Subrouter()
 	controllers.AddBoardController(boardRouter)
 
+	gueraBookController := r.PathPrefix("/guerabooks").Subrouter()
+	controllers.AddGuerabookController(gueraBookController)
+
 	return r
 }
