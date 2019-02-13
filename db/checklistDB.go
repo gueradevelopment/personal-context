@@ -35,8 +35,17 @@ func (db *ChecklistDB) GetAll(c chan ResultArray, where map[string][]string) {
 	defer close(c)
 	result := ResultArray{}
 	var arr = []Model{}
+	var boardID string
+	if where["boardId"] != nil {
+		boardID = where["boardId"][0]
+	}
 	for _, v := range checklistItems {
-		arr = append(arr, v)
+		if boardID != "" && v.BoardID == boardID {
+			arr = append(arr, v)
+		}
+		if boardID == "" {
+			arr = append(arr, v)
+		}
 	}
 	result.Result = arr
 	c <- result

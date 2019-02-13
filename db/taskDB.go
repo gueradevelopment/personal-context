@@ -35,8 +35,26 @@ func (db *TaskDB) GetAll(c chan ResultArray, where map[string][]string) {
 	defer close(c)
 	result := ResultArray{}
 	var arr = []Model{}
+	var boardID string
+	if where["boardId"] != nil {
+		boardID = where["boardId"][0]
+	}
+	var checklistID string
+	if where["checklistId"] != nil {
+		checklistID = where["checklistId"][0]
+	}
 	for _, v := range items {
-		arr = append(arr, v)
+		if checklistID != "" && v.ChecklistID == checklistID {
+			arr = append(arr, v)
+		}
+		if checklistID == "" {
+			if boardID != "" && v.BoardID == boardID {
+				arr = append(arr, v)
+			}
+			if boardID == "" {
+				arr = append(arr, v)
+			}
+		}
 	}
 	result.Result = arr
 	c <- result

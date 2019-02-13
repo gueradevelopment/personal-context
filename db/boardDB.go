@@ -35,8 +35,17 @@ func (db *BoardDB) GetAll(c chan ResultArray, where map[string][]string) {
 	defer close(c)
 	result := ResultArray{}
 	var arr = []Model{}
+	var guerabookID string
+	if where["guerabookId"] != nil {
+		guerabookID = where["guerabookId"][0]
+	}
 	for _, v := range boardItems {
-		arr = append(arr, v)
+		if guerabookID != "" && v.GuerabookID == guerabookID {
+			arr = append(arr, v)
+		}
+		if guerabookID == "" {
+			arr = append(arr, v)
+		}
 	}
 	result.Result = arr
 	c <- result
