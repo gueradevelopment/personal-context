@@ -12,15 +12,17 @@ import (
 	"github.com/gueradevelopment/personal-context/db"
 )
 
-var (
-	guerabookDB db.GuerabookDB
-)
+// GuerabookController - controller for Guerabook model
+type GuerabookController struct {
+	data db.GuerabookDB
+}
 
-func guerabookGet(w http.ResponseWriter, r *http.Request) {
+// Get handler
+func (controller *GuerabookController) Get(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	c := make(chan db.Result)
-	go guerabookDB.Get(id, c)
+	go controller.data.Get(id, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -33,10 +35,12 @@ func guerabookGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func guerabookGetAll(w http.ResponseWriter, r *http.Request) {
+// GetAll handler
+func (controller *GuerabookController) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	c := make(chan db.ResultArray)
-	go guerabookDB.GetAll(c)
+	where := r.URL.Query()
+	go controller.data.GetAll(c, where)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -49,11 +53,12 @@ func guerabookGetAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func guerabookDelete(w http.ResponseWriter, r *http.Request) {
+// Delete handler
+func (controller *GuerabookController) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	c := make(chan db.Result)
-	go guerabookDB.Delete(id, c)
+	go controller.data.Delete(id, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -66,7 +71,8 @@ func guerabookDelete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func guerabookEdit(w http.ResponseWriter, r *http.Request) {
+// Edit handler
+func (controller *GuerabookController) Edit(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Error!")
@@ -75,7 +81,7 @@ func guerabookEdit(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, &item)
 
 	c := make(chan db.Result)
-	go guerabookDB.Edit(item, c)
+	go controller.data.Edit(item, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -88,7 +94,8 @@ func guerabookEdit(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func guerabookAdd(w http.ResponseWriter, r *http.Request) {
+// Add handler
+func (controller *GuerabookController) Add(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Error!")
@@ -97,7 +104,7 @@ func guerabookAdd(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, &item)
 
 	c := make(chan db.Result)
-	go guerabookDB.Add(item, c)
+	go controller.data.Add(item, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -110,12 +117,18 @@ func guerabookAdd(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// AddGuerabookController function
+// AddController function
+func (controller *GuerabookController) AddController(r *mux.Router) {
+	r.HandleFunc("/", controller.GetAll).Methods(http.MethodGet)
+	r.HandleFunc("/{id}", controller.Get).Methods(http.MethodGet)
+	r.HandleFunc("/", controller.Edit).Methods(http.MethodPut)
+	r.HandleFunc("/", controller.Add).Methods(http.MethodPost)
+	r.HandleFunc("/{id}", controller.Delete).Methods(http.MethodDelete)
+}
+
+// AddGuerabookController initializer
 func AddGuerabookController(r *mux.Router) {
-	guerabookDB = db.GuerabookDB{}
-	r.HandleFunc("/", guerabookGetAll).Methods(http.MethodGet)
-	r.HandleFunc("/{id}", guerabookGet).Methods(http.MethodGet)
-	r.HandleFunc("/", guerabookEdit).Methods(http.MethodPut)
-	r.HandleFunc("/", guerabookAdd).Methods(http.MethodPost)
-	r.HandleFunc("/{id}", guerabookDelete).Methods(http.MethodDelete)
+	data := db.GuerabookDB{}
+	guerabookController := GuerabookController{data: data}
+	guerabookController.AddController(r)
 }

@@ -12,15 +12,17 @@ import (
 	"github.com/gueradevelopment/personal-context/db"
 )
 
-var (
-	boardDB db.BoardDB
-)
+// BoardController - controller for Board model
+type BoardController struct {
+	data db.BoardDB
+}
 
-func boardGet(w http.ResponseWriter, r *http.Request) {
+// Get handler
+func (controller *BoardController) Get(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	c := make(chan db.Result)
-	go boardDB.Get(id, c)
+	go controller.data.Get(id, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -33,10 +35,12 @@ func boardGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func boardGetAll(w http.ResponseWriter, r *http.Request) {
+// GetAll handler
+func (controller *BoardController) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	c := make(chan db.ResultArray)
-	go boardDB.GetAll(c)
+	where := r.URL.Query()
+	go controller.data.GetAll(c, where)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -49,11 +53,12 @@ func boardGetAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func boardDelete(w http.ResponseWriter, r *http.Request) {
+// Delete handler
+func (controller *BoardController) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	c := make(chan db.Result)
-	go boardDB.Delete(id, c)
+	go controller.data.Delete(id, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -66,7 +71,8 @@ func boardDelete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func boardEdit(w http.ResponseWriter, r *http.Request) {
+// Edit handler
+func (controller *BoardController) Edit(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Error!")
@@ -75,7 +81,7 @@ func boardEdit(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, &item)
 
 	c := make(chan db.Result)
-	go boardDB.Edit(item, c)
+	go controller.data.Edit(item, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -88,7 +94,8 @@ func boardEdit(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func boardAdd(w http.ResponseWriter, r *http.Request) {
+// Add handler
+func (controller *BoardController) Add(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Error!")
@@ -97,7 +104,7 @@ func boardAdd(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, &item)
 
 	c := make(chan db.Result)
-	go boardDB.Add(item, c)
+	go controller.data.Add(item, c)
 	result := <-c
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
@@ -110,12 +117,18 @@ func boardAdd(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// AddBoardController function
+// AddController function
+func (controller *BoardController) AddController(r *mux.Router) {
+	r.HandleFunc("/", controller.GetAll).Methods(http.MethodGet)
+	r.HandleFunc("/{id}", controller.Get).Methods(http.MethodGet)
+	r.HandleFunc("/", controller.Edit).Methods(http.MethodPut)
+	r.HandleFunc("/", controller.Add).Methods(http.MethodPost)
+	r.HandleFunc("/{id}", controller.Delete).Methods(http.MethodDelete)
+}
+
+// AddBoardController initializer
 func AddBoardController(r *mux.Router) {
-	boardDB = db.BoardDB{}
-	r.HandleFunc("/", boardGetAll).Methods(http.MethodGet)
-	r.HandleFunc("/{id}", boardGet).Methods(http.MethodGet)
-	r.HandleFunc("/", boardEdit).Methods(http.MethodPut)
-	r.HandleFunc("/", boardAdd).Methods(http.MethodPost)
-	r.HandleFunc("/{id}", boardDelete).Methods(http.MethodDelete)
+	data := db.BoardDB{}
+	boardController := BoardController{data: data}
+	boardController.AddController(r)
 }
