@@ -31,7 +31,7 @@ func (db *ChecklistDB) Get(id string, c chan Result) {
 }
 
 // GetAll - retrieves all resources
-func (db *ChecklistDB) GetAll(c chan ResultArray) {
+func (db *ChecklistDB) GetAll(c chan ResultArray, where map[string][]string) {
 	defer close(c)
 	result := ResultArray{}
 	var arr = []Model{}

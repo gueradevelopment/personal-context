@@ -18,7 +18,7 @@ type ResultArray struct {
 // Database interface to wrap data accessors
 type Database interface {
 	Get(string, chan Result)
-	GetAll(chan ResultArray)
+	GetAll(chan ResultArray, map[string][]string)
 	Add(Model, chan Result)
 	Edit(Model, chan Result)
 	Delete(string, chan Result)
