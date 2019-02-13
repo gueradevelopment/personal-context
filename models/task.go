@@ -6,4 +6,5 @@ type Task struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	BoardID     string `json:"boardId"`
+	ChecklistID string `json:"checklistId"`
 }
