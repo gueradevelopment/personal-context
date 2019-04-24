@@ -2,8 +2,9 @@ package db
 
 import (
 	"errors"
-
+	"fmt"
 	"github.com/gueradevelopment/personal-context/models"
+	"personal-context/services"
 )
 
 // GuerabookDB - Guerabook model database accessor
@@ -11,11 +12,16 @@ type GuerabookDB struct{}
 
 var (
 	guerabookItems = make(map[string]models.Guerabook)
+	broker         = services.RabbitServiceInit()
 )
 
 // Get - retrieves a single resource
 func (db *GuerabookDB) Get(id string, c chan Result) {
 	defer close(c)
+	res := make(chan string)
+	go broker.SendAndReceive("{\"title\": \"I am the Senate\"}", "guerabook.create", res)
+	response := <-res
+	fmt.Println(response)
 	result := Result{}
 	for ID, item := range guerabookItems {
 		if ID == id {

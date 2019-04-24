@@ -9,7 +9,7 @@ import (
 	"github.com/gueradevelopment/personal-context/models"
 
 	"github.com/gorilla/mux"
-	"github.com/gueradevelopment/personal-context/db"
+	"personal-context/db"
 )
 
 // GuerabookController - controller for Guerabook model
