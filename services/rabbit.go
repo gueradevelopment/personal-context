@@ -9,7 +9,6 @@ import (
 
 type RabbitService struct {
 	connection *amqp.Connection
-	channel    *amqp.Channel
 }
 
 func RabbitServiceInit() *RabbitService {
@@ -20,36 +19,47 @@ func RabbitServiceInit() *RabbitService {
 		return nil
 	}
 	service.connection = connection
-	channel, err := service.connection.Channel()
-	if err != nil {
-		log.Fatalln("Channel Creation Error")
-		return nil
-	}
-	service.channel = channel
 	return service
 }
 
 func (service *RabbitService) SendAndReceive(message string, routingKey string, c chan string) {
 	defer close(c)
-	service.channel.ExchangeDeclare(
-		"data-provision",
-		"topic",
+	channel, err := service.connection.Channel()
+	if err != nil {
+		return
+	}
+	defer channel.Close()
+	channel.ExchangeDeclare(
+		"data-provision", "topic", true, false, false, false, nil,
+	)
+
+	correlationId := uuid.New().String()
+	queueName := uuid.New().String()
+	q, err := channel.QueueDeclare(queueName, false, false, false, false, nil)
+
+	fmt.Println("Consuming on: " + queueName)
+
+	//channel.QueueBind(queueName, "#", "", false, nil)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	responses, err := channel.Consume(
+		q.Name,
+		"",
 		true,
 		false,
 		false,
 		false,
 		nil,
 	)
-	correlationId := uuid.New().String()
-	queueName := uuid.New().String()
-	q, err := service.channel.QueueDeclare(queueName, false, true, false, true, nil)
-	service.channel.QueueBind(queueName, "data-provision", "#", false, nil)
+
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 	}
 
-	//if service.channel.closed
-	err = service.channel.Publish(
+	err = channel.Publish(
 		"data-provision",
 		routingKey,
 		false,
@@ -61,25 +71,17 @@ func (service *RabbitService) SendAndReceive(message string, routingKey string, 
 			Body:          []byte(message),
 		},
 	)
+
 	if err != nil {
 		log.Fatalln("Could not publish " + message + " to queue: " + err.Error())
 	}
-	responses, _ := service.channel.Consume(
-		q.Name,
-		"",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
+
 	for res := range responses {
-		if correlationId != res.CorrelationId {
-			continue
+		if correlationId == res.CorrelationId {
+			payload := string(res.Body)
+			channel.QueueDelete(queueName, false, false, false)
+			c <- payload
+			break
 		}
-		payload := string(res.Body)
-		fmt.Println(payload)
-		service.channel.QueueDelete(q.Name, false, false, false)
-		c <- payload
 	}
 }
