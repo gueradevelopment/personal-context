@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"personal-context/routers"
+	"github.com/gueradevelopment/personal-context/routers"
 )
 
 func main() {
