@@ -1,10 +1,12 @@
 package db
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/gueradevelopment/personal-context/models"
-	"personal-context/services"
+	"github.com/gueradevelopment/personal-context/services"
 )
 
 // GuerabookDB - Guerabook model database accessor
@@ -22,6 +24,7 @@ func (db *GuerabookDB) Get(id string, c chan Result) {
 	go broker.SendAndReceive("{\"title\": \"I am the Senate\"}", "guerabook.create", res)
 	response := <-res
 	fmt.Println(response)
+
 	result := Result{}
 	for ID, item := range guerabookItems {
 		if ID == id {
@@ -52,11 +55,25 @@ func (db *GuerabookDB) GetAll(c chan ResultArray, where map[string][]string) {
 func (db *GuerabookDB) Add(item models.Guerabook, c chan Result) {
 	defer close(c)
 	result := Result{}
-	if guerabookItems[item.ID] == (models.Guerabook{}) {
-		guerabookItems[item.ID] = item
-		result.Result = item
+	marshalled, err := json.Marshal(item)
+
+	if err != nil {
+		result.Err = errors.New("Error at model item")
 	} else {
-		result.Err = errors.New("Duplicated ID")
+		res := make(chan string)
+		go broker.SendAndReceive(string(marshalled), "personal.guerabook.create", res)
+		response := <-res
+
+		responseMap := make(map[string]interface{})
+		json.Unmarshal([]byte(response), &responseMap)
+
+		fmt.Println(responseMap["type"])
+		if responseMap["type"] == "success" {
+			result.Result = responseMap["data"]
+		} else {
+			result.Err = errors.New("Unable to add new item")
+		}
+		fmt.Println(response)
 	}
 	c <- result
 }
