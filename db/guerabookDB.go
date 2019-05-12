@@ -15,6 +15,7 @@ type GuerabookDB struct{}
 var (
 	guerabookItems = make(map[string]models.Guerabook)
 	broker         = services.RabbitServiceInit()
+	routeKey       = "personal.guerabook."
 )
 
 // Get - retrieves a single resource
@@ -54,28 +55,13 @@ func (db *GuerabookDB) GetAll(c chan ResultArray, where map[string][]string) {
 // Add - creates a resource
 func (db *GuerabookDB) Add(item models.Guerabook, c chan Result) {
 	defer close(c)
-	result := Result{}
-	marshalled, err := json.Marshal(item)
+	marshalled, _ := json.Marshal(item) // It was unmarshalled at the controller, it should no be any error here
+	res := make(chan string)
+	go broker.SendAndReceive(string(marshalled), routeKey+"create", res)
+	response := <-res
 
-	if err != nil {
-		result.Err = errors.New("Error at model item")
-	} else {
-		res := make(chan string)
-		go broker.SendAndReceive(string(marshalled), "personal.guerabook.create", res)
-		response := <-res
-
-		responseMap := make(map[string]interface{})
-		json.Unmarshal([]byte(response), &responseMap)
-
-		fmt.Println(responseMap["type"])
-		if responseMap["type"] == "success" {
-			result.Result = responseMap["data"]
-		} else {
-			result.Err = errors.New("Unable to add new item")
-		}
-		fmt.Println(response)
-	}
-	c <- result
+	fmt.Println(response)
+	c <- parseRabbitResponse(response)
 }
 
 // Edit - updates a resource
@@ -103,4 +89,18 @@ func (db *GuerabookDB) Delete(id string, c chan Result) {
 		delete(guerabookItems, id)
 	}
 	c <- result
+}
+
+func parseRabbitResponse(response string) Result {
+	result := Result{}
+	responseMap := make(map[string]interface{})
+	json.Unmarshal([]byte(response), &responseMap)
+
+	if responseMap["type"] == "success" {
+		result.Result = responseMap["data"]
+	} else {
+		result.Err = errors.New("Server error")
+	}
+
+	return result
 }
