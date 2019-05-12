@@ -1,5 +1,21 @@
 package db
 
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
+	"github.com/gueradevelopment/personal-context/services"
+)
+
+var (
+	broker       = services.RabbitServiceInit()
+	guerabookKey = "personal.guerabook."
+	boardKey     = "personal.board."
+	checklistKey = "personal.checklist."
+	taskKey      = "personal.task."
+)
+
 // Model interface to wrap data types
 type Model interface{}
 
@@ -22,4 +38,35 @@ type Database interface {
 	Add(Model, chan Result)
 	Edit(Model, chan Result)
 	Delete(string, chan Result)
+}
+
+func parseRabbitResponse(response string) Result {
+	result := Result{}
+	responseMap := make(map[string]interface{})
+	json.Unmarshal([]byte(response), &responseMap)
+
+	if responseMap["type"] == "success" {
+		result.Result = responseMap["data"]
+	} else {
+		result.Err = errors.New(responseMap["reason"].(string))
+	}
+
+	fmt.Println(result.Err)
+
+	return result
+}
+
+func parseRabbitArray(response string) ResultArray {
+	result := ResultArray{}
+
+	responseMap := make(map[string]interface{})
+	json.Unmarshal([]byte(response), &responseMap)
+
+	if responseMap["type"] == "success" {
+		result.Result = []Model{responseMap["data"]}
+	} else {
+		result.Err = errors.New("Server error")
+	}
+
+	return result
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gueradevelopment/personal-context/models"
 )
@@ -28,6 +29,17 @@ func (db *BoardDB) Get(id string, c chan Result) {
 		result.Err = errors.New("No result")
 	}
 	c <- result
+
+	defer close(c)
+
+	queryID := fmt.Sprintf(`{"id":"%s"}`, id)
+	res := make(chan string)
+	go broker.SendAndReceive(queryID, boardKey+"retrieve", res)
+
+	response := <-res
+	fmt.Println(response)
+
+	c <- parseRabbitResponse(response)
 }
 
 // GetAll - retrieves all resources
