@@ -3,7 +3,6 @@ package db
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/gueradevelopment/personal-context/services"
 )
@@ -50,8 +49,6 @@ func parseRabbitResponse(response string) Result {
 	} else {
 		result.Err = errors.New(responseMap["reason"].(string))
 	}
-
-	fmt.Println(result.Err)
 
 	return result
 }
