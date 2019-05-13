@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gueradevelopment/personal-context/models"
+	"personal-context/models"
 )
 
 // GuerabookDB - Guerabook model database accessor

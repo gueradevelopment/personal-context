@@ -1,9 +1,10 @@
 package routers
 
 import (
+	"personal-context/controllers"
+	"personal-context/middleware"
+
 	"github.com/gorilla/mux"
-	"github.com/gueradevelopment/personal-context/controllers"
-	"github.com/gueradevelopment/personal-context/middleware"
 )
 
 // GetRouter function

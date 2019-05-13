@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gueradevelopment/personal-context/services"
+	"personal-context/services"
 )
 
 var (

@@ -6,10 +6,11 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/gueradevelopment/personal-context/models"
+	"personal-context/models"
+
+	"personal-context/db"
 
 	"github.com/gorilla/mux"
-	"github.com/gueradevelopment/personal-context/db"
 )
 
 // ChecklistController - controller for Checklist model

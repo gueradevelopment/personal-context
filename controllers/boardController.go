@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/gueradevelopment/personal-context/models"
+	"personal-context/db"
+	"personal-context/models"
 
 	"github.com/gorilla/mux"
-	"github.com/gueradevelopment/personal-context/db"
 )
 
 // BoardController - controller for Board model

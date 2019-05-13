@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gueradevelopment/personal-context/routers"
+	"personal-context/routers"
 )
 
 func determineListenAddress() (string, error) {
@@ -24,7 +24,7 @@ func main() {
 	}
 
 	r := routers.GetRouter()
-	log.Printf("Listening on %s...\n", addr)
+	log.Printf("\nListening on %s...\n", addr)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		panic(err)
 	}
