@@ -3,6 +3,7 @@ package db
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
 
 	"github.com/gueradevelopment/personal-context/services"
 )
@@ -22,6 +23,7 @@ type Model interface{}
 type Result struct {
 	Result Model
 	Err    error
+	Code   int
 }
 
 // ResultArray struct to wrap channel tuple
@@ -46,8 +48,10 @@ func parseRabbitResponse(response string) Result {
 
 	if responseMap["type"] == "success" {
 		result.Result = responseMap["data"]
+		result.Code = http.StatusOK
 	} else {
 		result.Err = errors.New(responseMap["reason"].(string))
+		result.Code = http.StatusNotFound
 	}
 
 	return result
