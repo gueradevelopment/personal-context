@@ -2,9 +2,6 @@
 	"ImportPath": "personal-context",
 	"GoVersion": "go1.11",
 	"GodepVersion": "v80",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/google/uuid",
