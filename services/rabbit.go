@@ -2,15 +2,18 @@ package services
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
-	"log"
 )
 
+// RabbitService is a struct
 type RabbitService struct {
 	connection *amqp.Connection
 }
 
+// RabbitServiceInit initialices the service
 func RabbitServiceInit() *RabbitService {
 	service := new(RabbitService)
 	connection, err := amqp.Dial("amqp://guera:pass@34.73.163.109")
@@ -22,8 +25,12 @@ func RabbitServiceInit() *RabbitService {
 	return service
 }
 
+// SendAndReceive calls the Rabbit service
 func (service *RabbitService) SendAndReceive(message string, routingKey string, c chan string) {
 	defer close(c)
+	// debug body
+	log.Println("Body:\n" + message)
+	// debug body
 	channel, err := service.connection.Channel()
 	if err != nil {
 		return
