@@ -66,6 +66,7 @@ func parseRabbitArray(response string) ResultArray {
 
 	if responseMap["type"] == "success" {
 		result.Result = []Model{responseMap["data"]}
+		result.Code = http.StatusOK
 	} else {
 		result.Err = errors.New(responseMap["reason"].(string))
 		result.Code = http.StatusNotFound

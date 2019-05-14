@@ -8,8 +8,9 @@ import (
 
 	"personal-context/models"
 
-	"github.com/gorilla/mux"
 	"personal-context/db"
+
+	"github.com/gorilla/mux"
 )
 
 // TaskController - controller for Task model
@@ -23,16 +24,7 @@ func (controller *TaskController) Get(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	c := make(chan db.Result)
 	go controller.data.Get(id, c)
-	result := <-c
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponse(w, c)
 }
 
 // GetAll handler
@@ -41,16 +33,7 @@ func (controller *TaskController) GetAll(w http.ResponseWriter, r *http.Request)
 	where := r.URL.Query()
 	c := make(chan db.ResultArray)
 	go controller.data.GetAll(c, where)
-	result := <-c
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponseArr(w, c)
 }
 
 // Delete handler
@@ -59,16 +42,7 @@ func (controller *TaskController) Delete(w http.ResponseWriter, r *http.Request)
 	id := vars["id"]
 	c := make(chan db.Result)
 	go controller.data.Delete(id, c)
-	result := <-c
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponse(w, c)
 }
 
 // Edit handler
@@ -82,16 +56,7 @@ func (controller *TaskController) Edit(w http.ResponseWriter, r *http.Request) {
 
 	c := make(chan db.Result)
 	go controller.data.Edit(item, c)
-	result := <-c
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponse(w, c)
 }
 
 // Add handler
@@ -105,16 +70,7 @@ func (controller *TaskController) Add(w http.ResponseWriter, r *http.Request) {
 
 	c := make(chan db.Result)
 	go controller.data.Add(item, c)
-	result := <-c
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponse(w, c)
 }
 
 // AddController function

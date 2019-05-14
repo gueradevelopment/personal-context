@@ -23,16 +23,7 @@ func (controller *BoardController) Get(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	c := make(chan db.Result)
 	go controller.data.Get(id, c)
-	result := <-c
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponse(w, c)
 }
 
 // GetAll handler
@@ -41,17 +32,7 @@ func (controller *BoardController) GetAll(w http.ResponseWriter, r *http.Request
 	c := make(chan db.ResultArray)
 	where := r.URL.Query()
 	go controller.data.GetAll(c, where)
-	result := <-c
-	w.WriteHeader(result.Code)
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponseArr(w, c)
 }
 
 // Delete handler
@@ -60,16 +41,7 @@ func (controller *BoardController) Delete(w http.ResponseWriter, r *http.Request
 	id := vars["id"]
 	c := make(chan db.Result)
 	go controller.data.Delete(id, c)
-	result := <-c
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponse(w, c)
 }
 
 // Edit handler
@@ -83,16 +55,7 @@ func (controller *BoardController) Edit(w http.ResponseWriter, r *http.Request) 
 
 	c := make(chan db.Result)
 	go controller.data.Edit(item, c)
-	result := <-c
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponse(w, c)
 }
 
 // Add handler
@@ -106,17 +69,7 @@ func (controller *BoardController) Add(w http.ResponseWriter, r *http.Request) {
 
 	c := make(chan db.Result)
 	go controller.data.Add(item, c)
-	result := <-c
-	w.WriteHeader(result.Code)
-	if result.Err == nil {
-		marshalled, err := json.Marshal(result.Result)
-		if err != nil {
-			fmt.Fprintf(w, "Error!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(marshalled)
-		}
-	}
+	writeResponse(w, c)
 }
 
 // AddController function
