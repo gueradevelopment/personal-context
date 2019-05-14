@@ -12,7 +12,6 @@ func GetRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.Use(middleware.Auth)
 	r.Use(middleware.Logger)
-	r.Use(middleware.Cors)
 
 	taskRouter := r.PathPrefix("/tasks").Subrouter()
 	controllers.AddTaskController(taskRouter)

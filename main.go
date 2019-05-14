@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"personal-context/routers"
+
+	"github.com/gorilla/handlers"
 )
 
 func determineListenAddress() (string, error) {
@@ -25,7 +27,7 @@ func main() {
 
 	r := routers.GetRouter()
 	log.Printf("\nListening on %s...\n", addr)
-	if err := http.ListenAndServe(addr, r); err != nil {
+	if err := http.ListenAndServe(addr, handlers.CORS()(r)); err != nil {
 		panic(err)
 	}
 }
