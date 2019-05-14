@@ -30,6 +30,7 @@ type Result struct {
 type ResultArray struct {
 	Result []Model
 	Err    error
+	Code   int
 }
 
 // Database interface to wrap data accessors
@@ -66,7 +67,8 @@ func parseRabbitArray(response string) ResultArray {
 	if responseMap["type"] == "success" {
 		result.Result = []Model{responseMap["data"]}
 	} else {
-		result.Err = errors.New("Server error")
+		result.Err = errors.New(responseMap["reason"].(string))
+		result.Code = http.StatusNotFound
 	}
 
 	return result

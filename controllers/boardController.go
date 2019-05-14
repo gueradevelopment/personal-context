@@ -42,6 +42,7 @@ func (controller *BoardController) GetAll(w http.ResponseWriter, r *http.Request
 	where := r.URL.Query()
 	go controller.data.GetAll(c, where)
 	result := <-c
+	w.WriteHeader(result.Code)
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
 		if err != nil {
@@ -106,6 +107,7 @@ func (controller *BoardController) Add(w http.ResponseWriter, r *http.Request) {
 	c := make(chan db.Result)
 	go controller.data.Add(item, c)
 	result := <-c
+	w.WriteHeader(result.Code)
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
 		if err != nil {
