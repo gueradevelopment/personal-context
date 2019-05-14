@@ -52,7 +52,24 @@ func parseRabbitResponse(response string) Result {
 		result.Code = http.StatusOK
 	} else {
 		result.Err = errors.New(responseMap["reason"].(string))
-		result.Code = http.StatusNotFound
+		var code int
+
+		switch responseMap["errorType"] {
+		case "NotFoundException":
+			code = http.StatusNotFound
+			break
+		case "UnsupportedActionException":
+			code = http.StatusNotImplemented
+			break
+		case "BadRequestException":
+			code = http.StatusBadRequest
+			break
+		default:
+			code = http.StatusInternalServerError
+			break
+		}
+
+		result.Code = code
 	}
 
 	return result
