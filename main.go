@@ -27,7 +27,7 @@ func main() {
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	methodsOk := handlers.AllowedMethods([]string{"HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"})
 
 	r := routers.GetRouter()
 	log.Printf("\nListening on %s...\n", addr)
