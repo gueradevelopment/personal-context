@@ -7,7 +7,7 @@ type Checklist struct {
 	Description     string `json:"description,omitempty"`
 	UserID          string `json:"userId"`
 	IsTeamContext   bool   `json:"isTeamContext"`
-	CompletionState bool   `json:"completionState,omitempty"`
+	CompletionState string `json:"completionState,omitempty"`
 	CompletionDate  string `json:"completionDate,omitempty"`
 	BoardID         string `json:"boardId,omitempty"`
 }
