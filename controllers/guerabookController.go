@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/gueradevelopment/personal-context/models"
+	"personal-context/models"
 
 	"github.com/gorilla/mux"
-	"github.com/gueradevelopment/personal-context/db"
+	"personal-context/db"
 )
 
 // GuerabookController - controller for Guerabook model
@@ -24,6 +24,7 @@ func (controller *GuerabookController) Get(w http.ResponseWriter, r *http.Reques
 	c := make(chan db.Result)
 	go controller.data.Get(id, c)
 	result := <-c
+	w.WriteHeader(result.Code)
 	if result.Err == nil {
 		marshalled, err := json.Marshal(result.Result)
 		if err != nil {
