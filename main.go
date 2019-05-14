@@ -25,9 +25,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested", "Content-Type"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+
 	r := routers.GetRouter()
 	log.Printf("\nListening on %s...\n", addr)
-	if err := http.ListenAndServe(addr, handlers.CORS()(r)); err != nil {
+	if err := http.ListenAndServe(addr, handlers.CORS(originsOk, headersOk, methodsOk)(r)); err != nil {
 		panic(err)
 	}
 }
