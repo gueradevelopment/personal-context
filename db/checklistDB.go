@@ -1,92 +1,80 @@
 package db
 
 import (
-	"errors"
+	"encoding/json"
+	"fmt"
 
-	"github.com/gueradevelopment/personal-context/models"
+	"personal-context/models"
 )
 
 // ChecklistDB - Checklist model database accessor
 type ChecklistDB struct{}
 
-var (
-	checklistItems = make(map[string]models.Checklist)
-)
-
 // Get - retrieves a single resource
 func (db *ChecklistDB) Get(id string, c chan Result) {
 	defer close(c)
-	result := Result{}
-	for ID, item := range checklistItems {
-		if ID == id {
-			result.Result = item
-			result.Err = nil
-			break
-		}
-	}
-	if result.Result == nil {
-		result.Err = errors.New("No result")
-	}
-	c <- result
+
+	queryID := fmt.Sprintf(`{"id":"%s"}`, id)
+	res := make(chan string)
+	go broker.SendAndReceive(queryID, checklistKey+"retrieve", res)
+
+	response := <-res
+	fmt.Println(response)
+
+	c <- parseRabbitResponse(response)
 }
 
 // GetAll - retrieves all resources
 func (db *ChecklistDB) GetAll(c chan ResultArray, where map[string][]string) {
 	defer close(c)
-	result := ResultArray{}
-	var arr = []Model{}
-	var boardID string
-	if where["boardId"] != nil {
-		boardID = where["boardId"][0]
-	}
-	for _, v := range checklistItems {
-		if boardID != "" && v.BoardID == boardID {
-			arr = append(arr, v)
-		}
-		if boardID == "" {
-			arr = append(arr, v)
-		}
-	}
-	result.Result = arr
-	c <- result
+
+	userID := where["userId"][0]
+	queryID := fmt.Sprintf(`{"userId":"%s"}`, userID)
+
+	res := make(chan string)
+	go broker.SendAndReceive(queryID, checklistKey+"retrieveAll", res)
+
+	response := <-res
+	fmt.Println(response)
+
+	c <- parseRabbitArray(response)
 }
 
 // Add - creates a resource
 func (db *ChecklistDB) Add(item models.Checklist, c chan Result) {
 	defer close(c)
-	result := Result{}
-	if checklistItems[item.ID] == (models.Checklist{}) {
-		checklistItems[item.ID] = item
-		result.Result = item
-	} else {
-		result.Err = errors.New("Duplicated ID")
-	}
-	c <- result
+	marshalled, _ := json.Marshal(item) // It was unmarshalled at the controller, it should no be any error here
+	res := make(chan string)
+	go broker.SendAndReceive(string(marshalled), checklistKey+"create", res)
+
+	response := <-res
+	fmt.Println(response)
+	c <- parseRabbitResponse(response)
 }
 
 // Edit - updates a resource
 func (db *ChecklistDB) Edit(item models.Checklist, c chan Result) {
 	defer close(c)
-	result := Result{}
-	if checklistItems[item.ID] == (models.Checklist{}) {
-		result.Err = errors.New("No such ID")
-	} else {
-		checklistItems[item.ID] = item
-		result.Result = item
-	}
-	c <- result
+
+	marshalled, _ := json.Marshal(item) // It was unmarshalled at the controller, it should no be any error here
+	res := make(chan string)
+	go broker.SendAndReceive(string(marshalled), checklistKey+"update", res)
+
+	response := <-res
+	fmt.Println(response)
+	c <- parseRabbitResponse(response)
 }
 
 // Delete - deletes a resource
 func (db *ChecklistDB) Delete(id string, c chan Result) {
 	defer close(c)
-	result := Result{}
-	item := checklistItems[id]
-	if item == (models.Checklist{}) {
-		result.Err = errors.New("No such ID")
-	} else {
-		result.Result = item
-		delete(checklistItems, id)
-	}
-	c <- result
+
+	queryID := fmt.Sprintf(`{"id":"%s"}`, id)
+	res := make(chan string)
+	go broker.SendAndReceive(queryID, checklistKey+"delete", res)
+
+	response := <-res
+	fmt.Println(response)
+
+	c <- parseRabbitResponse(response)
 }
