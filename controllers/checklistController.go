@@ -6,11 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"personal-context/models"
-
-	"personal-context/db"
+	"github.com/gueradevelopment/personal-context/models"
 
 	"github.com/gorilla/mux"
+	"github.com/gueradevelopment/personal-context/db"
 )
 
 // ChecklistController - controller for Checklist model
@@ -24,7 +23,16 @@ func (controller *ChecklistController) Get(w http.ResponseWriter, r *http.Reques
 	id := vars["id"]
 	c := make(chan db.Result)
 	go controller.data.Get(id, c)
-	writeResponse(w, c)
+	result := <-c
+	if result.Err == nil {
+		marshalled, err := json.Marshal(result.Result)
+		if err != nil {
+			fmt.Fprintf(w, "Error!")
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(marshalled)
+		}
+	}
 }
 
 // GetAll handler
@@ -33,7 +41,16 @@ func (controller *ChecklistController) GetAll(w http.ResponseWriter, r *http.Req
 	c := make(chan db.ResultArray)
 	where := r.URL.Query()
 	go controller.data.GetAll(c, where)
-	writeResponseArr(w, c)
+	result := <-c
+	if result.Err == nil {
+		marshalled, err := json.Marshal(result.Result)
+		if err != nil {
+			fmt.Fprintf(w, "Error!")
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(marshalled)
+		}
+	}
 }
 
 // Delete handler
@@ -42,7 +59,16 @@ func (controller *ChecklistController) Delete(w http.ResponseWriter, r *http.Req
 	id := vars["id"]
 	c := make(chan db.Result)
 	go controller.data.Delete(id, c)
-	writeResponse(w, c)
+	result := <-c
+	if result.Err == nil {
+		marshalled, err := json.Marshal(result.Result)
+		if err != nil {
+			fmt.Fprintf(w, "Error!")
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(marshalled)
+		}
+	}
 }
 
 // Edit handler
@@ -56,7 +82,16 @@ func (controller *ChecklistController) Edit(w http.ResponseWriter, r *http.Reque
 
 	c := make(chan db.Result)
 	go controller.data.Edit(item, c)
-	writeResponse(w, c)
+	result := <-c
+	if result.Err == nil {
+		marshalled, err := json.Marshal(result.Result)
+		if err != nil {
+			fmt.Fprintf(w, "Error!")
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(marshalled)
+		}
+	}
 }
 
 // Add handler
@@ -70,7 +105,16 @@ func (controller *ChecklistController) Add(w http.ResponseWriter, r *http.Reques
 
 	c := make(chan db.Result)
 	go controller.data.Add(item, c)
-	writeResponse(w, c)
+	result := <-c
+	if result.Err == nil {
+		marshalled, err := json.Marshal(result.Result)
+		if err != nil {
+			fmt.Fprintf(w, "Error!")
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(marshalled)
+		}
+	}
 }
 
 // AddController function

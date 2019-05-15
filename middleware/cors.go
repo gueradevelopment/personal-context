@@ -1,8 +1,6 @@
 package middleware
 
-import (
-	"net/http"
-)
+import "net/http"
 
 // Cors - middleware to correctly serve resources with CORS
 func Cors(next http.Handler) http.Handler {
