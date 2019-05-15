@@ -75,6 +75,8 @@ func parseRabbitResponse(response string) Result {
 	return result
 }
 
+//6be62ad5-76cc-4ee0-92a2-a1a858c9c16d
+//
 func parseRabbitArray(response string) ResultArray {
 	result := ResultArray{}
 
@@ -86,7 +88,24 @@ func parseRabbitArray(response string) ResultArray {
 		result.Code = http.StatusOK
 	} else {
 		result.Err = errors.New(responseMap["reason"].(string))
-		result.Code = http.StatusNotFound
+		var code int
+
+		switch responseMap["errorType"] {
+		case "NotFoundException":
+			code = http.StatusNotFound
+			break
+		case "UnsupportedActionException":
+			code = http.StatusNotImplemented
+			break
+		case "BadRequestException":
+			code = http.StatusBadRequest
+			break
+		default:
+			code = http.StatusInternalServerError
+			break
+		}
+
+		result.Code = code
 	}
 
 	return result
