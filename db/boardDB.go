@@ -58,7 +58,6 @@ func (db *BoardDB) Edit(item models.Board, c chan Result) {
 
 	marshalled, _ := json.Marshal(item) // It was unmarshalled at the controller, it should no be any error here
 	res := make(chan string)
-	fmt.Println(string(marshalled))
 	go broker.SendAndReceive(string(marshalled), boardKey+"update", res)
 
 	response := <-res
